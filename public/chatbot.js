@@ -5,7 +5,6 @@
   const CHATBOT_API_URL = 'https://idea2networkchatbot.onrender.com/chat';
   const BOT_NAME = 'Idea2Network';
   const SUBTITLE = 'Enterprise AI & Software Solutions';
-  const LOGO_URL = 'https://idea2network.com.au/wp-content/uploads/2026/02/idea2network-logo.png';
   const PRIMARY_COLOR = '#C51C5A'; // Idea2Network Logo Pink
   const PRIMARY_DARK = '#9E1547';
   const SECONDARY_COLOR = '#F9F9F9'; // Cleaner white/grey for enterprise
@@ -34,11 +33,11 @@
       outline: none;
       animation: i2n-pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
     }
-    #i2n-bubble img {
-      width: 34px;
-      height: 34px;
-      object-fit: contain;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    #i2n-bubble-text {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      font-family: inherit;
     }
     #i2n-bubble:hover {
       transform: scale(1.08);
@@ -90,11 +89,11 @@
     #i2n-avatar {
       width: 42px; height: 42px; border-radius: 50%;
       background: #fff;
+      color: ${PRIMARY_COLOR};
       display: flex; align-items: center; justify-content: center;
-      padding: 6px; box-sizing: border-box;
+      font-size: 16px; font-weight: 800; letter-spacing: -0.5px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-    #i2n-avatar img { width: 100%; height: 100%; object-fit: contain; }
     #i2n-header-text { display: flex; flex-direction: column; }
     #i2n-header h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
     #i2n-header p  { margin: 4px 0 0; font-size: 11.5px; opacity: 0.9; font-weight: 400; }
@@ -128,13 +127,13 @@
     .i2n-bubble-icon {
       width: 30px; height: 30px; border-radius: 50%;
       background: #fff;
+      color: ${PRIMARY_COLOR};
       border: 1px solid #eaeaea;
       display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; letter-spacing: -0.5px;
       flex-shrink: 0; margin-bottom: 2px;
-      padding: 4px; box-sizing: border-box;
       box-shadow: 0 2px 5px rgba(0,0,0,0.04);
     }
-    .i2n-bubble-icon img { width: 100%; height: 100%; object-fit: contain; }
     
     .i2n-user-icon {
       width: 30px; height: 30px; border-radius: 50%;
@@ -269,13 +268,13 @@
   const container = document.createElement('div');
   container.innerHTML = `
     <button id="i2n-bubble" aria-label="Open chat">
-      <img src="${LOGO_URL}" alt="Chat">
+      <div id="i2n-bubble-text">I2N</div>
     </button>
 
     <div id="i2n-window" role="dialog" aria-label="${BOT_NAME}">
       <div id="i2n-header">
         <div id="i2n-header-info">
-          <div id="i2n-avatar"><img src="${LOGO_URL}" alt="Logo"></div>
+          <div id="i2n-avatar">I2N</div>
           <div id="i2n-header-text">
             <h3>${BOT_NAME}</h3>
             <p>${SUBTITLE}</p>
@@ -287,7 +286,7 @@
       <div id="i2n-messages"></div>
 
       <div id="i2n-typing">
-        <div class="i2n-bubble-icon"><img src="${LOGO_URL}" alt="Logo"></div>
+        <div class="i2n-bubble-icon">I2N</div>
         <div class="i2n-typing-bubble">
           <div class="i2n-dot"></div>
           <div class="i2n-dot"></div>
@@ -333,7 +332,7 @@
 
     msgEl.innerHTML = isUser
       ? `<div class="i2n-text">${escapedText}</div><div class="i2n-user-icon">${userIconSVG}</div>`
-      : `<div class="i2n-bubble-icon"><img src="${LOGO_URL}" alt="Logo"></div><div class="i2n-text">${escapedText}</div>`;
+      : `<div class="i2n-bubble-icon">I2N</div><div class="i2n-text">${escapedText}</div>`;
 
     messages.appendChild(msgEl);
     scrollToBottom();
@@ -408,7 +407,7 @@
         })
       });
 
-      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      if (!response.ok) throw new Error(`Server error: ${response.status} `);
       const data = await response.json();
       const reply = data.reply || 'An unexpected error occurred. Please contact our support team.';
 
