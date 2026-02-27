@@ -1,19 +1,19 @@
 (function () {
-    'use strict';
+  'use strict';
 
-    // ─── CONFIG ───────────────────────────────────────────────────────────────
-    const CHATBOT_API_URL = 'https://your-deployed-backend.com/chat'; // ← Change to your deployed URL
-    // For local testing use: 'http://localhost:3000/chat'
+  // ─── CONFIG ───────────────────────────────────────────────────────────────
+  const CHATBOT_API_URL = 'https://idea2networkchatbot.onrender.com/chat'; // ← Change to your deployed URL
+  // For local testing use: 'http://localhost:3000/chat'
 
-    const BOT_NAME = 'idea2network AI';
-    const BUBBLE_EMOJI = '💬';
-    const PRIMARY_COLOR = '#6C47FF';
-    const PRIMARY_DARK = '#4f32cc';
-    const SECONDARY_COLOR = '#F0EDFF';
+  const BOT_NAME = 'idea2network AI';
+  const BUBBLE_EMOJI = '💬';
+  const PRIMARY_COLOR = '#6C47FF';
+  const PRIMARY_DARK = '#4f32cc';
+  const SECONDARY_COLOR = '#F0EDFF';
 
-    // ─── INJECT CSS ────────────────────────────────────────────────────────────
-    const style = document.createElement('style');
-    style.textContent = `
+  // ─── INJECT CSS ────────────────────────────────────────────────────────────
+  const style = document.createElement('style');
+  style.textContent = `
     #i2n-bubble {
       position: fixed;
       bottom: 24px;
@@ -233,11 +233,11 @@
       #i2n-bubble { bottom: 16px; right: 16px; }
     }
   `;
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 
-    // ─── BUILD HTML ────────────────────────────────────────────────────────────
-    const container = document.createElement('div');
-    container.innerHTML = `
+  // ─── BUILD HTML ────────────────────────────────────────────────────────────
+  const container = document.createElement('div');
+  container.innerHTML = `
     <button id="i2n-bubble" aria-label="Open chat">${BUBBLE_EMOJI}</button>
 
     <div id="i2n-window" role="dialog" aria-label="${BOT_NAME}">
@@ -274,146 +274,146 @@
       <div id="i2n-powered">Powered by <a href="https://idea2network.ai" target="_blank">idea2network.ai</a></div>
     </div>
   `;
-    document.body.appendChild(container);
+  document.body.appendChild(container);
 
-    // ─── STATE ─────────────────────────────────────────────────────────────────
-    let isOpen = false;
-    let isLoading = false;
-    let conversationHistory = []; // { role: 'user'|'assistant', content: '...' }
+  // ─── STATE ─────────────────────────────────────────────────────────────────
+  let isOpen = false;
+  let isLoading = false;
+  let conversationHistory = []; // { role: 'user'|'assistant', content: '...' }
 
-    // ─── ELEMENTS ──────────────────────────────────────────────────────────────
-    const bubble = document.getElementById('i2n-bubble');
-    const chatWin = document.getElementById('i2n-window');
-    const closeBtn = document.getElementById('i2n-close');
-    const messages = document.getElementById('i2n-messages');
-    const typing = document.getElementById('i2n-typing');
-    const input = document.getElementById('i2n-input');
-    const sendBtn = document.getElementById('i2n-send');
+  // ─── ELEMENTS ──────────────────────────────────────────────────────────────
+  const bubble = document.getElementById('i2n-bubble');
+  const chatWin = document.getElementById('i2n-window');
+  const closeBtn = document.getElementById('i2n-close');
+  const messages = document.getElementById('i2n-messages');
+  const typing = document.getElementById('i2n-typing');
+  const input = document.getElementById('i2n-input');
+  const sendBtn = document.getElementById('i2n-send');
 
-    // ─── HELPERS ───────────────────────────────────────────────────────────────
-    function getTime() {
-        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // ─── HELPERS ───────────────────────────────────────────────────────────────
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function appendMessage(text, role) {
+    const isUser = role === 'user';
+    const msgEl = document.createElement('div');
+    msgEl.className = `i2n-msg ${isUser ? 'i2n-user' : 'i2n-bot'}`;
+
+    const escapedText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+
+    msgEl.innerHTML = isUser
+      ? `<div class="i2n-text">${escapedText}</div><div class="i2n-bubble-icon">👤</div>`
+      : `<div class="i2n-bubble-icon">🤖</div><div class="i2n-text">${escapedText}</div>`;
+    messages.appendChild(msgEl);
+
+    // Timestamp
+    const timeEl = document.createElement('div');
+    timeEl.className = 'i2n-time';
+    timeEl.textContent = getTime();
+    messages.appendChild(timeEl);
+
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function showTyping() {
+    typing.classList.add('i2n-show');
+    scrollToBottom();
+  }
+
+  function hideTyping() {
+    typing.classList.remove('i2n-show');
+  }
+
+  function setLoading(val) {
+    isLoading = val;
+    sendBtn.disabled = val;
+    input.disabled = val;
+    if (val) showTyping(); else hideTyping();
+  }
+
+  // ─── TOGGLE CHAT ───────────────────────────────────────────────────────────
+  function openChat() {
+    isOpen = true;
+    bubble.classList.add('i2n-open');
+    chatWin.classList.add('i2n-visible');
+    input.focus();
+    // Send welcome message once
+    if (conversationHistory.length === 0) {
+      setTimeout(() => {
+        const welcome = 'Hi! Welcome to idea2network.ai 👋\n\nI\'m your AI Startup Assistant. To get started — are you a Founder, Investor, or Partner?';
+        appendMessage(welcome, 'assistant');
+        conversationHistory.push({ role: 'assistant', content: welcome });
+      }, 350);
     }
+  }
 
-    function appendMessage(text, role) {
-        const isUser = role === 'user';
-        const msgEl = document.createElement('div');
-        msgEl.className = `i2n-msg ${isUser ? 'i2n-user' : 'i2n-bot'}`;
+  function closeChat() {
+    isOpen = false;
+    bubble.classList.remove('i2n-open');
+    chatWin.classList.remove('i2n-visible');
+  }
 
-        const escapedText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+  bubble.addEventListener('click', () => isOpen ? closeChat() : openChat());
+  closeBtn.addEventListener('click', closeChat);
 
-        msgEl.innerHTML = isUser
-            ? `<div class="i2n-text">${escapedText}</div><div class="i2n-bubble-icon">👤</div>`
-            : `<div class="i2n-bubble-icon">🤖</div><div class="i2n-text">${escapedText}</div>`;
-        messages.appendChild(msgEl);
+  // ─── SEND MESSAGE ──────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text || isLoading) return;
 
-        // Timestamp
-        const timeEl = document.createElement('div');
-        timeEl.className = 'i2n-time';
-        timeEl.textContent = getTime();
-        messages.appendChild(timeEl);
+    input.value = '';
+    input.style.height = 'auto';
+    appendMessage(text, 'user');
+    conversationHistory.push({ role: 'user', content: text });
 
-        scrollToBottom();
+    setLoading(true);
+
+    try {
+      const response = await fetch(CHATBOT_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: conversationHistory.map(m => ({
+            role: m.role,
+            content: m.content
+          }))
+        })
+      });
+
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      const data = await response.json();
+      const reply = data.reply || 'Sorry, I could not get a response.';
+
+      appendMessage(reply, 'assistant');
+      conversationHistory.push({ role: 'assistant', content: reply });
+    } catch (err) {
+      appendMessage('⚠️ Connection error. Please try again in a moment.', 'assistant');
+      console.error('[idea2network chatbot]', err);
+    } finally {
+      setLoading(false);
+      input.focus();
     }
+  }
 
-    function scrollToBottom() {
-        messages.scrollTop = messages.scrollHeight;
+  sendBtn.addEventListener('click', sendMessage);
+
+  // Enter to send (Shift+Enter for newline)
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
+  });
 
-    function showTyping() {
-        typing.classList.add('i2n-show');
-        scrollToBottom();
-    }
-
-    function hideTyping() {
-        typing.classList.remove('i2n-show');
-    }
-
-    function setLoading(val) {
-        isLoading = val;
-        sendBtn.disabled = val;
-        input.disabled = val;
-        if (val) showTyping(); else hideTyping();
-    }
-
-    // ─── TOGGLE CHAT ───────────────────────────────────────────────────────────
-    function openChat() {
-        isOpen = true;
-        bubble.classList.add('i2n-open');
-        chatWin.classList.add('i2n-visible');
-        input.focus();
-        // Send welcome message once
-        if (conversationHistory.length === 0) {
-            setTimeout(() => {
-                const welcome = 'Hi! Welcome to idea2network.ai 👋\n\nI\'m your AI Startup Assistant. To get started — are you a Founder, Investor, or Partner?';
-                appendMessage(welcome, 'assistant');
-                conversationHistory.push({ role: 'assistant', content: welcome });
-            }, 350);
-        }
-    }
-
-    function closeChat() {
-        isOpen = false;
-        bubble.classList.remove('i2n-open');
-        chatWin.classList.remove('i2n-visible');
-    }
-
-    bubble.addEventListener('click', () => isOpen ? closeChat() : openChat());
-    closeBtn.addEventListener('click', closeChat);
-
-    // ─── SEND MESSAGE ──────────────────────────────────────────────────────────
-    async function sendMessage() {
-        const text = input.value.trim();
-        if (!text || isLoading) return;
-
-        input.value = '';
-        input.style.height = 'auto';
-        appendMessage(text, 'user');
-        conversationHistory.push({ role: 'user', content: text });
-
-        setLoading(true);
-
-        try {
-            const response = await fetch(CHATBOT_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messages: conversationHistory.map(m => ({
-                        role: m.role,
-                        content: m.content
-                    }))
-                })
-            });
-
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
-            const data = await response.json();
-            const reply = data.reply || 'Sorry, I could not get a response.';
-
-            appendMessage(reply, 'assistant');
-            conversationHistory.push({ role: 'assistant', content: reply });
-        } catch (err) {
-            appendMessage('⚠️ Connection error. Please try again in a moment.', 'assistant');
-            console.error('[idea2network chatbot]', err);
-        } finally {
-            setLoading(false);
-            input.focus();
-        }
-    }
-
-    sendBtn.addEventListener('click', sendMessage);
-
-    // Enter to send (Shift+Enter for newline)
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    // Auto-resize textarea
-    input.addEventListener('input', () => {
-        input.style.height = 'auto';
-        input.style.height = Math.min(input.scrollHeight, 100) + 'px';
-    });
+  // Auto-resize textarea
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+  });
 
 })();
