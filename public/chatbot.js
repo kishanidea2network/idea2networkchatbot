@@ -33,11 +33,10 @@
       outline: none;
       animation: i2n-pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
     }
-    #i2n-bubble-text {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      font-family: inherit;
+    #i2n-bubble-icon-main {
+      width: 32px;
+      height: 32px;
+      fill: #fff;
     }
     #i2n-bubble:hover {
       transform: scale(1.08);
@@ -89,11 +88,11 @@
     #i2n-avatar {
       width: 42px; height: 42px; border-radius: 50%;
       background: #fff;
-      color: ${PRIMARY_COLOR};
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; font-weight: 800; letter-spacing: -0.5px;
+      padding: 6px; box-sizing: border-box;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
+    #i2n-avatar svg { width: 24px; height: 24px; fill: ${PRIMARY_COLOR}; }
     #i2n-header-text { display: flex; flex-direction: column; }
     #i2n-header h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
     #i2n-header p  { margin: 4px 0 0; font-size: 11.5px; opacity: 0.9; font-weight: 400; }
@@ -127,13 +126,12 @@
     .i2n-bubble-icon {
       width: 30px; height: 30px; border-radius: 50%;
       background: #fff;
-      color: ${PRIMARY_COLOR};
       border: 1px solid #eaeaea;
       display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800; letter-spacing: -0.5px;
       flex-shrink: 0; margin-bottom: 2px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.04);
     }
+    .i2n-bubble-icon svg { width: 16px; height: 16px; fill: ${PRIMARY_COLOR}; }
     
     .i2n-user-icon {
       width: 30px; height: 30px; border-radius: 50%;
@@ -264,17 +262,20 @@
   `;
   document.head.appendChild(style);
 
+  // ─── SVG ICONS ─────────────────────────────────────────────────────────────
+  const headsetIconSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12v5c0 1.1.9 2 2 2h3v-7H5v-1c0-3.86 3.14-7 7-7s7 3.14 7 7v1h-2v7h3c1.1 0 2-.9 2-2v-5c0-5.52-4.48-10-10-10zm-1 16h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>`;
+
   // ─── BUILD HTML ────────────────────────────────────────────────────────────
   const container = document.createElement('div');
   container.innerHTML = `
     <button id="i2n-bubble" aria-label="Open chat">
-      <div id="i2n-bubble-text">I2N</div>
+      <div id="i2n-bubble-icon-main">${headsetIconSVG}</div>
     </button>
 
     <div id="i2n-window" role="dialog" aria-label="${BOT_NAME}">
       <div id="i2n-header">
         <div id="i2n-header-info">
-          <div id="i2n-avatar">I2N</div>
+          <div id="i2n-avatar">${headsetIconSVG}</div>
           <div id="i2n-header-text">
             <h3>${BOT_NAME}</h3>
             <p>${SUBTITLE}</p>
@@ -286,7 +287,7 @@
       <div id="i2n-messages"></div>
 
       <div id="i2n-typing">
-        <div class="i2n-bubble-icon">I2N</div>
+        <div class="i2n-bubble-icon">${headsetIconSVG}</div>
         <div class="i2n-typing-bubble">
           <div class="i2n-dot"></div>
           <div class="i2n-dot"></div>
@@ -332,7 +333,7 @@
 
     msgEl.innerHTML = isUser
       ? `<div class="i2n-text">${escapedText}</div><div class="i2n-user-icon">${userIconSVG}</div>`
-      : `<div class="i2n-bubble-icon">I2N</div><div class="i2n-text">${escapedText}</div>`;
+      : `<div class="i2n-bubble-icon">${headsetIconSVG}</div><div class="i2n-text">${escapedText}</div>`;
 
     messages.appendChild(msgEl);
     scrollToBottom();
